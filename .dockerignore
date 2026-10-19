@@ -1,0 +1,7 @@
+vendor
+.git
+.env
+project_sources
+websocket/node_modules
+app/protected/runtime
+*.zip

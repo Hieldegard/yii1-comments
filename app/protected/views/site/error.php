@@ -1,0 +1,1 @@
+<h1>Request could not be completed</h1><p><?php echo CHtml::encode($message); ?></p>

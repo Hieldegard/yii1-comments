@@ -1,0 +1,3 @@
+<?php if (!$comments): ?><p>No comments yet.</p><?php endif; ?>
+<?php foreach ($comments as $comment): ?><article data-id="<?php echo (int)$comment->id; ?>"><small>#<?php echo (int)$comment->id; ?> · <?php echo CHtml::encode($comment->created_at); ?> UTC</small><p class="body"><?php echo CHtml::encode($comment->body); ?></p><div class="actions"><a href="<?php echo $this->createUrl('admin/edit',['id'=>$comment->id]); ?>">Edit</a>
+<?php echo CHtml::beginForm($this->createUrl('admin/delete',['id'=>$comment->id]),'post'); ?><button class="danger">Delete</button><?php echo CHtml::endForm(); ?></div></article><?php endforeach; ?>

@@ -1,0 +1,19 @@
+name: Integration
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure disposable test environment
+        run: |
+          echo "ADMIN_PASSWORD=$(openssl rand -hex 16)" >> .env
+          echo "WS_SECRET=$(openssl rand -hex 32)" >> .env
+      - run: docker compose up --build -d --wait
+      - run: docker compose --profile test run --rm tests
+      - if: failure()
+        run: docker compose logs
+      - if: always()
+        run: docker compose down -v

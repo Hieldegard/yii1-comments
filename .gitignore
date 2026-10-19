@@ -1,0 +1,7 @@
+/vendor/
+/.env
+/app/protected/runtime/
+*.sqlite*
+/node_modules/
+/websocket/node_modules/
+__pycache__/

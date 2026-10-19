@@ -1,0 +1,2 @@
+<h1>Administrator login</h1><p class="error"><?php echo CHtml::encode($error); ?></p>
+<?php echo CHtml::beginForm(); ?><label for="username">Username</label><input id="username" name="username" autocomplete="username" required><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required><button>Log in</button><?php echo CHtml::endForm(); ?>

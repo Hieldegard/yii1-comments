@@ -1,0 +1,58 @@
+services:
+  app:
+    build: .
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      WS_SECRET: ${WS_SECRET:?Set WS_SECRET in .env}
+      DB_PATH: /data/comments.sqlite
+    volumes:
+      - comments-data:/data
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://localhost/index.php') === false ? 1 : 0);"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+    restart: unless-stopped
+  websocket:
+    build: ./websocket
+    environment:
+      WS_SECRET: ${WS_SECRET:?Set WS_SECRET in .env}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8081/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+    restart: unless-stopped
+  gateway:
+    image: nginx:1.28-alpine
+    ports:
+      - "${PORT:-8080}:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+      websocket:
+        condition: service_healthy
+    restart: unless-stopped
+  tests:
+    profiles: [test]
+    image: python:3.12-alpine
+    volumes:
+      - ./tests:/tests:ro
+    environment:
+      BASE_URL: http://gateway
+      WS_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+    depends_on:
+      gateway:
+        condition: service_started
+    command: ["python", "/tests/integration.py"]
+volumes:
+  comments-data:
